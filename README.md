@@ -8,16 +8,23 @@ It is packaged from Pi's upstream example extension at `examples/extensions/ques
 
 ## Install
 
-From this repository:
+Install directly from GitHub:
 
 ```bash
-pi install ./path/to/pi-question
+pi install git:github.com/ravshansbox/pi-question
 ```
 
-Or use it temporarily:
+Or clone it and install from the local checkout:
 
 ```bash
-pi -e ./path/to/pi-question
+git clone https://github.com/ravshansbox/pi-question.git
+pi install ./pi-question
+```
+
+Use it temporarily without adding it to settings:
+
+```bash
+pi -e git:github.com/ravshansbox/pi-question
 ```
 
 ## What it provides
