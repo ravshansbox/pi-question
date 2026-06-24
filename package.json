@@ -2,18 +2,37 @@
   "name": "pi-question",
   "version": "0.1.0",
   "description": "Question tool extension for pi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ravshansbox/pi-question.git"
+  },
+  "keywords": [
+    "pi",
+    "extension"
+  ],
+  "files": [
+    "index.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "pi": {
     "extensions": [
       "./index.ts"
     ]
   },
-  "dependencies": {
+  "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
-    "@earendil-works/pi-tui": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "dependencies": {
     "typebox": "*"
   },
   "devDependencies": {
     "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
   }
 }
