@@ -3,16 +3,28 @@
   "version": "0.1.0",
   "description": "Question tool extension for pi",
   "license": "MIT",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ravshansbox/pi-question.git"
   },
+  "homepage": "https://github.com/ravshansbox/pi-question#readme",
+  "bugs": {
+    "url": "https://github.com/ravshansbox/pi-question/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "question"
+  ],
   "files": [
     "index.ts",
     "README.md",
     "LICENSE"
   ],
-  "type": "module",
   "pi": {
     "extensions": [
       "./index.ts"
@@ -27,18 +39,6 @@
     "@types/node": "^26.1.2",
     "typescript": "^6.0.3"
   },
-  "homepage": "https://github.com/ravshansbox/pi-question#readme",
-  "bugs": {
-    "url": "https://github.com/ravshansbox/pi-question/issues"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "keywords": [
-    "pi-package",
-    "pi-extension",
-    "question"
-  ],
   "scripts": {
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck"
