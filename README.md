@@ -12,7 +12,7 @@ Question tool extension for pi.
 
 ## Usage
 
-Pi loads the tool from `./index.ts` and registers a `question` tool that shows a multiple-choice prompt in the TUI.
+Pi loads the tool from `./src/index.ts` and registers a `question` tool that shows a multiple-choice prompt in the TUI.
 
 For example, an agent can call `question` with options such as `Ship now`, `Review first`, and `Type something.` so the user can pick one option or enter a custom answer without leaving the session.
 
