@@ -4,10 +4,8 @@ Question tool extension for pi.
 
 ## Install
 
-```json
-{
-  "extensions": ["github:ravshansbox/pi-question"]
-}
+```bash
+pi install git:github.com/ravshansbox/pi-question
 ```
 
 ## Usage
