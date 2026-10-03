@@ -20,5 +20,5 @@ This tool is intended for interactive TUI sessions. In non-interactive contexts 
 
 ```bash
 npm install
-npm run typecheck
+npm run check
 ```
