@@ -187,9 +187,7 @@ export default function question(pi: ExtensionAPI) {
             const wrapped = wrapTextWithAnsi(text, renderWidth - prefixWidth);
             const continuationPrefix = ' '.repeat(prefixWidth);
             for (let i = 0; i < wrapped.length; i++) {
-              lines.push(
-                `${i === 0 ? prefix : continuationPrefix}${wrapped[i]}`,
-              );
+              lines.push(`${i === 0 ? prefix : continuationPrefix}${wrapped[i]}`);
             }
           }
 
@@ -222,10 +220,7 @@ export default function question(pi: ExtensionAPI) {
 
           lines.push('');
           if (editMode) {
-            addWrappedWithPrefix(
-              ' ',
-              theme.fg('dim', 'Enter to submit • Esc to go back'),
-            );
+            addWrappedWithPrefix(' ', theme.fg('dim', 'Enter to submit • Esc to go back'));
           } else {
             addWrappedWithPrefix(
               ' ',
@@ -289,15 +284,11 @@ export default function question(pi: ExtensionAPI) {
     },
 
     renderCall(args, theme, _context) {
-      let text =
-        theme.fg('toolTitle', theme.bold('question ')) +
-        theme.fg('muted', args.question);
+      let text = theme.fg('toolTitle', theme.bold('question ')) + theme.fg('muted', args.question);
       const opts = Array.isArray(args.options) ? args.options : [];
       if (opts.length) {
         const labels = opts.map((o: OptionWithDesc) => o.label);
-        const numbered = [...labels, 'Type something.'].map(
-          (o, i) => `${i + 1}. ${o}`,
-        );
+        const numbered = [...labels, 'Type something.'].map((o, i) => `${i + 1}. ${o}`);
         text += `\n${theme.fg('dim', `  Options: ${numbered.join(', ')}`)}`;
       }
       return new Text(text, 0, 0);
@@ -325,11 +316,7 @@ export default function question(pi: ExtensionAPI) {
       }
       const idx = details.options.indexOf(details.answer) + 1;
       const display = idx > 0 ? `${idx}. ${details.answer}` : details.answer;
-      return new Text(
-        theme.fg('success', '✓ ') + theme.fg('accent', display),
-        0,
-        0,
-      );
+      return new Text(theme.fg('success', '✓ ') + theme.fg('accent', display), 0, 0);
     },
   });
 }
