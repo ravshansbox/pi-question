@@ -5,7 +5,7 @@ Question tool extension for pi.
 ## Install
 
 ```bash
-pi install git:github.com/ravshansbox/pi-question
+pi install npm:@ravshansbox/pi-question
 ```
 
 ## Usage
