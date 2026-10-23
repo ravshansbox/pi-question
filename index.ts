@@ -1,7 +1,6 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import {
-  Editor,
-  type EditorTheme,
+  Input,
   Key,
   matchesKey,
   Text,
@@ -77,47 +76,27 @@ export default function (pi: ExtensionAPI) {
         index?: number;
       } | null>((tui, theme, _kb, done) => {
         let optionIndex = 0;
-        let editMode = false;
         let cachedLines: string[] | undefined;
 
-        const editorTheme: EditorTheme = {
-          borderColor: (s) => theme.fg('accent', s),
-          selectList: {
-            selectedPrefix: (t) => theme.fg('accent', t),
-            selectedText: (t) => theme.fg('accent', t),
-            description: (t) => theme.fg('muted', t),
-            scrollInfo: (t) => theme.fg('dim', t),
-            noMatch: (t) => theme.fg('warning', t),
-          },
-        };
-        const editor = new Editor(tui, editorTheme);
+        const input = new Input({
+          prompt: '',
+          placeholder: 'Type something.',
+          placeholderStyle: (t) => theme.fg('muted', t),
+        });
 
-        editor.onSubmit = (value) => {
-          const trimmed = value.trim();
-          if (trimmed) {
-            done({ answer: trimmed, wasCustom: true });
-          } else {
-            editMode = false;
-            editor.setText('');
-            refresh();
-          }
-        };
+        function isOnOther() {
+          return allOptions[optionIndex]?.isOther === true;
+        }
 
         function refresh() {
+          input.focused = isOnOther();
           cachedLines = undefined;
           tui.requestRender();
         }
 
         function handleInput(data: string) {
-          if (editMode) {
-            if (matchesKey(data, Key.escape)) {
-              editMode = false;
-              editor.setText('');
-              refresh();
-              return;
-            }
-            editor.handleInput(data);
-            refresh();
+          if (matchesKey(data, Key.escape)) {
+            done(null);
             return;
           }
 
@@ -136,16 +115,17 @@ export default function (pi: ExtensionAPI) {
             const selected = allOptions[optionIndex];
             if (!selected) return;
             if (selected.isOther) {
-              editMode = true;
-              refresh();
+              const trimmed = input.getValue().trim();
+              if (trimmed) done({ answer: trimmed, wasCustom: true });
             } else {
               done({ answer: selected.label, wasCustom: false, index: optionIndex + 1 });
             }
             return;
           }
 
-          if (matchesKey(data, Key.escape)) {
-            done(null);
+          if (isOnOther()) {
+            input.handleInput(data);
+            refresh();
           }
         }
 
@@ -178,35 +158,35 @@ export default function (pi: ExtensionAPI) {
 
           for (const [i, opt] of allOptions.entries()) {
             const selected = i === optionIndex;
-            const isOther = opt.isOther === true;
             const prefix = selected ? theme.fg('accent', '> ') : '  ';
-            const label = `${i + 1}. ${opt.label}${isOther && editMode ? ' ✎' : ''}`;
-            const color = selected || (isOther && editMode) ? 'accent' : 'text';
+            const number = `${i + 1}. `;
 
-            addWrappedWithPrefix(prefix, theme.fg(color, label));
+            if (opt.isOther && selected) {
+              const head = prefix + theme.fg('accent', number);
+              const inputWidth = Math.max(1, renderWidth - visibleWidth(head));
+              lines.push(head + (input.render(inputWidth)[0] ?? ''));
+            } else if (opt.isOther) {
+              addWrappedWithPrefix(
+                prefix,
+                theme.fg('text', number + (input.getValue() || opt.label)),
+              );
+            } else {
+              addWrappedWithPrefix(
+                prefix,
+                theme.fg(selected ? 'accent' : 'text', number + opt.label),
+              );
+            }
 
             if (opt.description) {
               addWrappedWithPrefix('     ', theme.fg('muted', opt.description));
             }
           }
 
-          if (editMode) {
-            lines.push('');
-            addWrappedWithPrefix(' ', theme.fg('muted', 'Your answer:'));
-            for (const line of editor.render(Math.max(1, renderWidth - 2))) {
-              lines.push(` ${line}`);
-            }
-          }
-
           lines.push('');
-          if (editMode) {
-            addWrappedWithPrefix(' ', theme.fg('dim', 'Enter to submit • Esc to go back'));
-          } else {
-            addWrappedWithPrefix(
-              ' ',
-              theme.fg('dim', '↑↓ navigate • Enter to select • Esc to cancel'),
-            );
-          }
+          addWrappedWithPrefix(
+            ' ',
+            theme.fg('dim', '↑↓ navigate • Enter to select • Esc to cancel'),
+          );
           lines.push(theme.fg('accent', '─'.repeat(renderWidth)));
 
           cachedLines = lines;
@@ -217,6 +197,7 @@ export default function (pi: ExtensionAPI) {
           render,
           invalidate: () => {
             cachedLines = undefined;
+            input.invalidate();
           },
           handleInput,
         };
