@@ -12,7 +12,9 @@ Add `-l` to install it in project settings.
 
 ## Usage
 
-Pi loads the extension from `./index.ts`, adapted from pi's `examples/extensions/question.ts`, and registers a `question` tool that shows a multiple-choice prompt in the TUI.
+Pi loads the extension from `./index.ts`, adapted from pi's `examples/extensions/question.ts`:
+
+- `question` tool that shows a multiple-choice prompt in the TUI
 
 Calls run one at a time, so several questions in one reply are shown one after another.
 
