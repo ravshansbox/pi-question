@@ -40,9 +40,7 @@ const OptionSchema = Type.Object({
 
 const QuestionParams = Type.Object({
   question: Type.String({ description: 'The question to ask the user' }),
-  options: Type.Array(OptionSchema, {
-    description: 'Options for the user to choose from',
-  }),
+  options: Type.Array(OptionSchema, { description: 'Options for the user to choose from' }),
 });
 
 export default function question(pi: ExtensionAPI) {
@@ -52,15 +50,13 @@ export default function question(pi: ExtensionAPI) {
     description:
       'Ask the user a question and let them pick from options. Use when you need user input to proceed.',
     parameters: QuestionParams,
+    executionMode: 'sequential',
 
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
       if (ctx.mode !== 'tui') {
         return {
           content: [
-            {
-              type: 'text',
-              text: 'Error: UI not available (running in non-interactive mode)',
-            },
+            { type: 'text', text: 'Error: UI not available (running in non-interactive mode)' },
           ],
           details: {
             question: params.question,
@@ -73,11 +69,7 @@ export default function question(pi: ExtensionAPI) {
       if (params.options.length === 0) {
         return {
           content: [{ type: 'text', text: 'Error: No options provided' }],
-          details: {
-            question: params.question,
-            options: [],
-            answer: null,
-          } as QuestionDetails,
+          details: { question: params.question, options: [], answer: null } as QuestionDetails,
         };
       }
 
@@ -154,11 +146,7 @@ export default function question(pi: ExtensionAPI) {
               editMode = true;
               refresh();
             } else {
-              done({
-                answer: selected.label,
-                wasCustom: false,
-                index: optionIndex + 1,
-              });
+              done({ answer: selected.label, wasCustom: false, index: optionIndex + 1 });
             }
             return;
           }
@@ -268,12 +256,7 @@ export default function question(pi: ExtensionAPI) {
         };
       }
       return {
-        content: [
-          {
-            type: 'text',
-            text: `User selected: ${result.index}. ${result.answer}`,
-          },
-        ],
+        content: [{ type: 'text', text: `User selected: ${result.index}. ${result.answer}` }],
         details: {
           question: params.question,
           options: simpleOptions,
