@@ -41,6 +41,10 @@ export default function (pi: ExtensionAPI) {
     label: 'Question',
     description:
       'Ask the user a question and let them pick from options. Use when you need user input to proceed.',
+    promptSnippet: 'Ask the user a multiple-choice question',
+    promptGuidelines: [
+      'Use question whenever you ask the user to choose between options; do not list the options in plain text instead.',
+    ],
     parameters: QuestionParams,
     executionMode: 'sequential',
 
