@@ -20,6 +20,7 @@ interface QuestionDetails {
   question: string;
   options: string[];
   answer: string | null;
+  index?: number;
   wasCustom?: boolean;
   error?: string;
 }
@@ -250,6 +251,7 @@ export default function (pi: ExtensionAPI) {
           question: params.question,
           options: simpleOptions,
           answer: result.answer,
+          index: result.index,
           wasCustom: false,
         } as QuestionDetails,
       };
@@ -293,7 +295,7 @@ export default function (pi: ExtensionAPI) {
           0,
         );
       }
-      const idx = details.options.indexOf(details.answer) + 1;
+      const idx = details.index ?? details.options.indexOf(details.answer) + 1;
       const display = idx > 0 ? `${idx}. ${details.answer}` : details.answer;
       return new Text(theme.fg('success', '✓ ') + theme.fg('accent', display), 0, 0);
     },

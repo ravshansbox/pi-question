@@ -72,3 +72,31 @@ test('renders a call whose arguments are still streaming', () => {
   const lines = tool.renderCall({ options: [{ label: 'Alpha' }, {}] }, theme).render(80);
   assert.ok(!lines.join('\n').includes('undefined'), lines.join('\n'));
 });
+
+test('shows the picked number when option labels repeat', async () => {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  let component: Component | undefined;
+  const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
+  const ctx = {
+    mode: 'tui',
+    ui: {
+      custom: (factory: any) =>
+        new Promise((resolve) => {
+          component = factory({ requestRender() {} }, theme, {}, resolve);
+        }),
+    },
+  };
+  const pending = tool.execute(
+    'id',
+    { question: 'Pick', options: [{ label: 'Same' }, { label: 'Same' }] },
+    undefined,
+    undefined,
+    ctx,
+  );
+  component!.handleInput('\x1b[B');
+  component!.handleInput('\r');
+  const result = await pending;
+  const text = tool.renderResult(result, {}, theme).render(80).join('\n');
+  assert.ok(text.includes('2. Same'), text);
+});
