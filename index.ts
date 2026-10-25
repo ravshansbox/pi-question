@@ -249,10 +249,13 @@ export default function (pi: ExtensionAPI) {
     },
 
     renderCall(args, theme) {
-      let text = theme.fg('toolTitle', theme.bold('question ')) + theme.fg('muted', args.question);
+      let text =
+        theme.fg('toolTitle', theme.bold('question ')) + theme.fg('muted', args.question ?? '');
       const opts = Array.isArray(args.options) ? args.options : [];
-      if (opts.length) {
-        const labels = opts.map((o: OptionWithDesc) => o.label);
+      const labels = opts
+        .map((o: Partial<OptionWithDesc> | undefined) => o?.label)
+        .filter((label): label is string => typeof label === 'string');
+      if (labels.length) {
         const numbered = [...labels, 'Type something.'].map((o, i) => `${i + 1}. ${o}`);
         text += `\n${theme.fg('dim', `  Options: ${numbered.join(', ')}`)}`;
       }

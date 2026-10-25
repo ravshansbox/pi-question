@@ -53,3 +53,11 @@ test('cancels the prompt when the signal aborts', async () => {
   ]);
   assert.equal((outcome as any).details?.answer, null);
 });
+
+test('renders a call whose arguments are still streaming', () => {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
+  const lines = tool.renderCall({ options: [{ label: 'Alpha' }, {}] }, theme).render(80);
+  assert.ok(!lines.join('\n').includes('undefined'), lines.join('\n'));
+});
