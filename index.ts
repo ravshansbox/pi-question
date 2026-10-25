@@ -21,6 +21,7 @@ interface QuestionDetails {
   options: string[];
   answer: string | null;
   wasCustom?: boolean;
+  error?: string;
 }
 
 const OptionSchema = Type.Object({
@@ -58,6 +59,7 @@ export default function (pi: ExtensionAPI) {
             question: params.question,
             options: params.options.map((o) => o.label),
             answer: null,
+            error: 'UI not available (running in non-interactive mode)',
           } as QuestionDetails,
         };
       }
@@ -65,7 +67,12 @@ export default function (pi: ExtensionAPI) {
       if (params.options.length === 0) {
         return {
           content: [{ type: 'text', text: 'Error: No options provided' }],
-          details: { question: params.question, options: [], answer: null } as QuestionDetails,
+          details: {
+            question: params.question,
+            options: [],
+            answer: null,
+            error: 'No options provided',
+          } as QuestionDetails,
         };
       }
 
@@ -267,6 +274,10 @@ export default function (pi: ExtensionAPI) {
       if (!details) {
         const text = result.content[0];
         return new Text(text?.type === 'text' ? text.text : '', 0, 0);
+      }
+
+      if (details.error) {
+        return new Text(theme.fg('error', `Error: ${details.error}`), 0, 0);
       }
 
       if (details.answer === null) {

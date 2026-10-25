@@ -54,6 +54,17 @@ test('cancels the prompt when the signal aborts', async () => {
   assert.equal((outcome as any).details?.answer, null);
 });
 
+test('shows the error instead of Cancelled when no options are given', async () => {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
+  const result = await tool.execute('id', { question: 'Pick', options: [] }, undefined, undefined, {
+    mode: 'tui',
+  });
+  const text = tool.renderResult(result, {}, theme).render(80).join('\n');
+  assert.ok(text.includes('No options provided'), text);
+});
+
 test('renders a call whose arguments are still streaming', () => {
   let tool: any;
   extension({ registerTool: (t: unknown) => (tool = t) } as any);
