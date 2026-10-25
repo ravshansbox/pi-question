@@ -41,3 +41,15 @@ test('re-renders to fit a narrower width', () => {
     assert.ok(visibleWidth(line) <= 20, line);
   }
 });
+
+test('cancels the prompt when the signal aborts', async () => {
+  const { run } = setup();
+  const controller = new AbortController();
+  const result = run(controller.signal);
+  controller.abort();
+  const outcome = await Promise.race([
+    result,
+    new Promise((resolve) => setTimeout(() => resolve('still open'), 50)),
+  ]);
+  assert.equal((outcome as any).details?.answer, null);
+});

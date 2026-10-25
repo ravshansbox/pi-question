@@ -48,7 +48,7 @@ export default function (pi: ExtensionAPI) {
     parameters: QuestionParams,
     executionMode: 'sequential',
 
-    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+    async execute(_toolCallId, params, signal, _onUpdate, ctx) {
       if (ctx.mode !== 'tui') {
         return {
           content: [
@@ -82,6 +82,9 @@ export default function (pi: ExtensionAPI) {
         let optionIndex = 0;
         let cachedLines: string[] | undefined;
         let cachedWidth: number | undefined;
+        const onAbort = () => done(null);
+        if (signal?.aborted) onAbort();
+        signal?.addEventListener('abort', onAbort, { once: true });
 
         const input = new Input({
           prompt: '',
@@ -206,6 +209,7 @@ export default function (pi: ExtensionAPI) {
             input.invalidate();
           },
           handleInput,
+          dispose: () => signal?.removeEventListener('abort', onAbort),
         };
       });
 
