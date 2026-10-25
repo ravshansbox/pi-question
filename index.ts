@@ -81,6 +81,7 @@ export default function (pi: ExtensionAPI) {
       } | null>((tui, theme, _kb, done) => {
         let optionIndex = 0;
         let cachedLines: string[] | undefined;
+        let cachedWidth: number | undefined;
 
         const input = new Input({
           prompt: '',
@@ -134,7 +135,7 @@ export default function (pi: ExtensionAPI) {
         }
 
         function render(width: number): string[] {
-          if (cachedLines) return cachedLines;
+          if (cachedLines && cachedWidth === width) return cachedLines;
 
           const lines: string[] = [];
           const renderWidth = Math.max(1, width);
@@ -194,6 +195,7 @@ export default function (pi: ExtensionAPI) {
           lines.push(theme.fg('accent', '─'.repeat(renderWidth)));
 
           cachedLines = lines;
+          cachedWidth = width;
           return lines;
         }
 
