@@ -100,3 +100,28 @@ test('shows the picked number when option labels repeat', async () => {
   const text = tool.renderResult(result, {}, theme).render(80).join('\n');
   assert.ok(text.includes('2. Same'), text);
 });
+
+test('aligns descriptions with labels from option 10 onwards', () => {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  let component: Component | undefined;
+  const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
+  const ctx = {
+    mode: 'tui',
+    ui: {
+      custom: (factory: any) =>
+        new Promise(() => {
+          component = factory({ requestRender() {} }, theme, {}, () => {});
+        }),
+    },
+  };
+  const options = Array.from({ length: 10 }, (_, i) => ({
+    label: `Label${i + 1}`,
+    description: `Desc${i + 1}`,
+  }));
+  void tool.execute('id', { question: 'Pick', options }, undefined, undefined, ctx);
+  const lines = component!.render(80);
+  const label = lines.find((line) => line.includes('Label10'))!;
+  const description = lines.find((line) => line.includes('Desc10'))!;
+  assert.equal(description.indexOf('Desc10'), label.indexOf('Label10'), lines.join('\n'));
+});

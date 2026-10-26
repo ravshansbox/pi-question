@@ -194,7 +194,10 @@ export default function (pi: ExtensionAPI) {
             }
 
             if (opt.description) {
-              addWrappedWithPrefix('     ', theme.fg('muted', opt.description));
+              addWrappedWithPrefix(
+                ' '.repeat(2 + number.length),
+                theme.fg('muted', opt.description),
+              );
             }
           }
 
