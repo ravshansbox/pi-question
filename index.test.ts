@@ -7,7 +7,7 @@ type Component = { render(width: number): string[]; handleInput(data: string): v
 
 function setup() {
   let tool: any;
-  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
   let component: Component | undefined;
   const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
   const ctx = {
@@ -56,7 +56,7 @@ test('cancels the prompt when the signal aborts', async () => {
 
 test('shows the error instead of Cancelled when no options are given', async () => {
   let tool: any;
-  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
   const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
   const result = await tool.execute('id', { question: 'Pick', options: [] }, undefined, undefined, {
     mode: 'tui',
@@ -67,7 +67,7 @@ test('shows the error instead of Cancelled when no options are given', async () 
 
 test('renders a call whose arguments are still streaming', () => {
   let tool: any;
-  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
   const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
   const lines = tool.renderCall({ options: [{ label: 'Alpha' }, {}] }, theme).render(80);
   assert.ok(!lines.join('\n').includes('undefined'), lines.join('\n'));
@@ -75,7 +75,7 @@ test('renders a call whose arguments are still streaming', () => {
 
 test('shows the picked number when option labels repeat', async () => {
   let tool: any;
-  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
   let component: Component | undefined;
   const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
   const ctx = {
@@ -103,7 +103,7 @@ test('shows the picked number when option labels repeat', async () => {
 
 test('aligns descriptions with labels from option 10 onwards', () => {
   let tool: any;
-  extension({ registerTool: (t: unknown) => (tool = t) } as any);
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
   let component: Component | undefined;
   const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
   const ctx = {
@@ -125,3 +125,18 @@ test('aligns descriptions with labels from option 10 onwards', () => {
   const description = lines.find((line) => line.includes('Desc10'))!;
   assert.equal(description.indexOf('Desc10'), label.indexOf('Label10'), lines.join('\n'));
 });
+
+for (const mode of ['tui', 'rpc', 'json', 'print']) {
+  test(`is ${mode === 'tui' ? 'active' : 'inactive'} in ${mode} mode`, async () => {
+    let activeTools = ['read', 'question'];
+    const handlers: Record<string, (event: unknown, ctx: unknown) => unknown> = {};
+    extension({
+      registerTool() {},
+      on: (event: string, handler: any) => (handlers[event] = handler),
+      getActiveTools: () => activeTools,
+      setActiveTools: (names: string[]) => (activeTools = names),
+    } as any);
+    await handlers.session_start?.({ type: 'session_start' }, { mode });
+    assert.equal(activeTools.includes('question'), mode === 'tui');
+  });
+}

@@ -38,6 +38,12 @@ const QuestionParams = Type.Object({
 });
 
 export default function (pi: ExtensionAPI) {
+  pi.on('session_start', (_event, ctx) => {
+    if (ctx.mode !== 'tui') {
+      pi.setActiveTools(pi.getActiveTools().filter((name) => name !== 'question'));
+    }
+  });
+
   pi.registerTool({
     name: 'question',
     label: 'Question',
