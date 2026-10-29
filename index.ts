@@ -52,6 +52,7 @@ export default function (pi: ExtensionAPI) {
     promptSnippet: 'Ask the user a multiple-choice question',
     promptGuidelines: [
       'Use question whenever you ask the user to choose between options; do not list the options in plain text instead.',
+      "If you have a recommendation, put it first in question options and add ' (Recommended)' to its label.",
     ],
     parameters: QuestionParams,
     executionMode: 'sequential',

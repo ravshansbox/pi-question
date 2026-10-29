@@ -140,3 +140,10 @@ for (const mode of ['tui', 'rpc', 'json', 'print']) {
     assert.equal(activeTools.includes('question'), mode === 'tui');
   });
 }
+
+test('asks the model to put a recommended option first', () => {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
+  const guidelines = tool.promptGuidelines.join('\n');
+  assert.ok(guidelines.includes('(Recommended)'), guidelines);
+});
