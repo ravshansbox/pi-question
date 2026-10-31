@@ -22,6 +22,8 @@ For example, an agent can call `question` with options such as `Ship now`, `Revi
 
 If the model has a recommendation, it puts that option first and adds ` (Recommended)` to its label, so the cursor starts on it.
 
+To change an option before answering, highlight it and press Tab. This copies its label (without ` (Recommended)`) into the `Type something.` input. Press Enter to send the edited answer, or Esc to go back to the original option. The model is told which option was edited, for example `User edited 2. Ship now to: Ship now, skip the changelog`. If the text is not changed, it is sent as a normal selection.
+
 This tool is only available in interactive TUI sessions. In RPC, JSON and print modes it is removed from the active tools, so the model does not see it. The built-in `Type something.` option lets the user enter free text when none of the listed choices fits.
 
 ## Development

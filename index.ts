@@ -22,6 +22,7 @@ interface QuestionDetails {
   answer: string | null;
   index?: number;
   wasCustom?: boolean;
+  editedFrom?: string;
   error?: string;
 }
 
@@ -93,8 +94,10 @@ export default function (pi: ExtensionAPI) {
         answer: string;
         wasCustom: boolean;
         index?: number;
+        editedFrom?: string;
       } | null>((tui, theme, _kb, done) => {
         let optionIndex = 0;
+        let editIndex: number | undefined;
         let cachedLines: string[] | undefined;
         let cachedWidth: number | undefined;
         const onAbort = () => done(null);
@@ -111,6 +114,10 @@ export default function (pi: ExtensionAPI) {
           return allOptions[optionIndex]?.isOther === true;
         }
 
+        function editableLabel(option: DisplayOption) {
+          return option.label.replace(/ \(Recommended\)$/, '');
+        }
+
         function refresh() {
           input.focused = isOnOther();
           cachedLines = undefined;
@@ -119,7 +126,25 @@ export default function (pi: ExtensionAPI) {
 
         function handleInput(data: string) {
           if (matchesKey(data, Key.escape)) {
+            if (isOnOther() && editIndex !== undefined) {
+              input.setValue('');
+              optionIndex = editIndex;
+              editIndex = undefined;
+              refresh();
+              return;
+            }
             done(null);
+            return;
+          }
+
+          if (matchesKey(data, Key.tab)) {
+            const option = allOptions[optionIndex];
+            if (!option || option.isOther) return;
+            editIndex = optionIndex;
+            input.setValue('');
+            input.handleInput(`\x1b[200~${editableLabel(option)}\x1b[201~`);
+            optionIndex = allOptions.length - 1;
+            refresh();
             return;
           }
 
@@ -139,7 +164,20 @@ export default function (pi: ExtensionAPI) {
             if (!selected) return;
             if (selected.isOther) {
               const trimmed = input.getValue().trim();
-              if (trimmed) done({ answer: trimmed, wasCustom: true });
+              if (!trimmed) return;
+              const original = editIndex === undefined ? undefined : allOptions[editIndex];
+              if (editIndex === undefined || !original) {
+                done({ answer: trimmed, wasCustom: true });
+              } else if (trimmed === editableLabel(original)) {
+                done({ answer: original.label, wasCustom: false, index: editIndex + 1 });
+              } else {
+                done({
+                  answer: trimmed,
+                  wasCustom: true,
+                  index: editIndex + 1,
+                  editedFrom: original.label,
+                });
+              }
             } else {
               done({ answer: selected.label, wasCustom: false, index: optionIndex + 1 });
             }
@@ -211,7 +249,7 @@ export default function (pi: ExtensionAPI) {
           lines.push('');
           addWrappedWithPrefix(
             ' ',
-            theme.fg('dim', '↑↓ navigate • Enter to select • Esc to cancel'),
+            theme.fg('dim', '↑↓ navigate • Enter to select • Tab to edit • Esc to cancel'),
           );
           lines.push(theme.fg('accent', '─'.repeat(renderWidth)));
 
@@ -240,6 +278,25 @@ export default function (pi: ExtensionAPI) {
             question: params.question,
             options: simpleOptions,
             answer: null,
+          } as QuestionDetails,
+        };
+      }
+
+      if (result.wasCustom && result.editedFrom !== undefined) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `User edited ${result.index}. ${result.editedFrom} to: ${result.answer}`,
+            },
+          ],
+          details: {
+            question: params.question,
+            options: simpleOptions,
+            answer: result.answer,
+            index: result.index,
+            wasCustom: true,
+            editedFrom: result.editedFrom,
           } as QuestionDetails,
         };
       }
@@ -299,7 +356,7 @@ export default function (pi: ExtensionAPI) {
       if (details.wasCustom) {
         return new Text(
           theme.fg('success', '✓ ') +
-            theme.fg('muted', '(wrote) ') +
+            theme.fg('muted', details.editedFrom === undefined ? '(wrote) ' : '(edited) ') +
             theme.fg('accent', details.answer),
           0,
           0,

@@ -147,3 +147,78 @@ test('asks the model to put a recommended option first', () => {
   const guidelines = tool.promptGuidelines.join('\n');
   assert.ok(guidelines.includes('(Recommended)'), guidelines);
 });
+
+function setupEditing() {
+  let tool: any;
+  extension({ registerTool: (t: unknown) => (tool = t), on() {} } as any);
+  let component: Component | undefined;
+  const theme = { fg: (_c: string, t: string) => t, bold: (t: string) => t };
+  const ctx = {
+    mode: 'tui',
+    ui: {
+      custom: (factory: any) =>
+        new Promise((resolve) => {
+          component = factory({ requestRender() {} }, theme, {}, resolve);
+        }),
+    },
+  };
+  const pending = tool.execute(
+    'id',
+    { question: 'Pick', options: [{ label: 'Review first' }, { label: 'Ship now (Recommended)' }] },
+    undefined,
+    undefined,
+    ctx,
+  );
+  const press = (...keys: string[]) => keys.forEach((key) => component!.handleInput(key));
+  const finish = async () => {
+    const result = await pending;
+    return {
+      content: result.content[0].text as string,
+      shown: tool.renderResult(result, {}, theme).render(80).join('\n') as string,
+    };
+  };
+  return { press, finish, render: () => component!.render(80).join('\n') };
+}
+
+const down = '\x1b[B';
+
+test('edits an option with Tab and tells the model which option was edited', async () => {
+  const { press, finish } = setupEditing();
+  press(down, '\t', ...', skip changelog', '\r');
+  const { content, shown } = await finish();
+  assert.equal(content, 'User edited 2. Ship now (Recommended) to: Ship now, skip changelog');
+  assert.ok(shown.includes('(edited) Ship now, skip changelog'), shown);
+});
+
+test('reports an unchanged edit as a normal selection', async () => {
+  const { press, finish } = setupEditing();
+  press(down, '\t', '\r');
+  const { content } = await finish();
+  assert.equal(content, 'User selected: 2. Ship now (Recommended)');
+});
+
+test('Esc while editing goes back to the original option', async () => {
+  const { press, finish } = setupEditing();
+  press(down, '\t', ...'!', '\x1b', '\r');
+  const { content } = await finish();
+  assert.equal(content, 'User selected: 2. Ship now (Recommended)');
+});
+
+test('Esc after undoing an edit cancels the question', async () => {
+  const { press, finish } = setupEditing();
+  press(down, '\t', '\x1b', '\x1b');
+  const { shown } = await finish();
+  assert.ok(shown.includes('Cancelled'), shown);
+});
+
+test('Tab replaces text already in the custom input', async () => {
+  const { press, finish } = setupEditing();
+  press(down, down, ...'draft', '\x1b[A', '\x1b[A', '\t', '\r');
+  const { content } = await finish();
+  assert.equal(content, 'User selected: 1. Review first');
+});
+
+test('shows Tab in the key hints', () => {
+  const { render } = setupEditing();
+  assert.ok(render().includes('Tab to edit'), render());
+});
